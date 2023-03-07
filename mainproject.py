@@ -106,19 +106,28 @@ def common_behaviors(df: pd.DataFrame) -> None:
 
 # research question 3
 """
-Takes in a pandas DataFrame and trains DecisionTreeClassifier
+Takes in a pandas DataFrame, creates a new column that represents
+the type of behavior exhibited by the squirrel, and returns the new
+DataFrame.
+"""
+def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
+    conditions = [(df['Approaches'] == True),
+                  (df['Indifferent'] == True),
+                  (df['Runs from'] == True)
+                  ]
+    values = ['Approaches', 'Indifferent', 'Runs from']
+    df['Behavior'] = np.select(conditions, values)
+    return df
+
+
+"""
+Takes in a pandas DataFrame and Series that represent the features and
+labels of the model and a float test size. Trains DecisionTreeClassifier
 to predict the type of behavior a squirrel will exhibit based
 on its observed actions. Returns a list that contains the saved
 model, the test size, and accuracy scores of the training and test data.
 """
-def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
-    # filtering data to squirrels that only exhibit one behavior
-    app = df['Approaches'] == True
-    indiff = df['Indifferent'] == True
-    run = df['Runs from'] == True
-    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
-    # set features to columns: 'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging'
-    # one-hot encode features, set features + labels
+def fit_and_predict_behavior(features: pd.DataFrame, labels: pd.Series, test_size: float) -> list[Any]:
     # set training + test data, test size
     # fit model
     # to save a model:
@@ -153,12 +162,12 @@ GOF test.
 """
 def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
     # to test result validity:
-        # 1) filter df to observed behaviors
-        # 2) create array to represent observed behaviors, append
-        #    behaviors
-        # 3) calculate degrees of freedom (# of groups - 1)
-        # 4) scipy.stats.chisquare(f_obs: array_like, f_exp: array_like,
-        #                          dof: int)
+    # 1) filter df to observed behaviors
+    # 2) create array to represent observed behaviors, append
+    #    behaviors
+    # 3) calculate degrees of freedom (# of groups - 1)
+    # 4) scipy.stats.chisquare(f_obs: array_like, f_exp: array_like,
+    #                          dof: int)
     pass
 
 
@@ -172,6 +181,15 @@ def main():
     common_fur_colors(df)
     common_highlight_colors(df)
     common_behaviors(df)
+
+    # filtering data to squirrels that only exhibit one behavior for question 3
+    app = df['Approaches'] == True
+    indiff = df['Indifferent'] == True
+    run = df['Runs from'] == True
+    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
+    # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
+    result = add_behavior_column(filtered)
+    # set features and labels, one-hot encode features
 
 
 if __name__ == '__main__':
