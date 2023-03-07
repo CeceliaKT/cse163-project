@@ -38,22 +38,21 @@ def plot_squirrel_sightings(df, shape_file) -> None:
 
     df = gpd.GeoDataFrame(df, geometry='coord')
     df.crs = shape_file.crs
-    new = df[['Hectare', 'coord', 'Unique Squirrel ID']]
-    new = new.dissolve(by='Hectare', aggfunc='count')
+    updated_df = df[['Hectare', 'coord', 'Unique Squirrel ID']]
+    updated_df = updated_df.dissolve(by='Hectare', aggfunc='count')
 
     fig, ax = plt.subplots(1, figsize=(15, 7))
 
-    # data_test = data_test.plot(color='#EEEEEE')
-    test_new = shape_file.to_crs(epsg=3857)
-    shape_file = test_new.plot(ax=ax, alpha=0, color='#FFFFFF')
+    updated_shape = shape_file.to_crs(epsg=3857)
+    shape_file = updated_shape.plot(ax=ax, alpha=0, color='#FFFFFF')
     cx.add_basemap(shape_file, alpha=0.5)
     # cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels)
     # ax.set_axis_off()
 
-    data_new = new.to_crs(epsg=3857)
+    new = updated_df.to_crs(epsg=3857)
     # df = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
     # markersize=4, cmap='Spectral', legend=True)
-    data_new = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
+    new = new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
                              markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
     plt.savefig('map.png')
@@ -65,7 +64,12 @@ Takes in a pandas DataFrame and creates a bar chart of the
 most common fur colors. Returns None.
 """
 def common_fur_colors(df: pd.DataFrame) -> None:
-    pass
+    fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
+
+    sns.catplot(data = fur_color, x = 'Primary Fur Color', y = 'counts', kind = 'bar')
+    plt.ylabel("Count")
+    plt.title("Prevalence of Fur Color")
+    plt.savefig("fur_color_plot.png", bbox_inches="tight")  
 
 
 """
@@ -73,7 +77,12 @@ Takes in a pandas DataFrame and creates a bar chart of the
 most common highlight colors. Returns None.
 """
 def common_highlight_colors(df: pd.DataFrame) -> None:
-    pass
+    highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
+    sns.catplot(data = highlight_color, x = 'Highlight Fur Color', y = 'counts', kind = 'bar')
+    plt.ylabel("Count")
+    plt.xticks(rotation='vertical')
+    plt.title("Prevalence of Fur Highlight Color")
+    plt.savefig("highlight_color_plot.png", bbox_inches="tight")
 
 
 """
@@ -81,7 +90,18 @@ Takes in a pandas DataFrame and creates a bar chart of the
 most common behaviors. Returns None.
 """
 def common_behaviors(df: pd.DataFrame) -> None:
-    pass
+    approach = df['Approaches'].value_counts().rename_axis('Approaches').reset_index(name='counts')
+    indifferent = df['Indifferent'].value_counts().rename_axis('Indifferent').reset_index(name='counts')
+    runs_from = df['Runs from'].value_counts().rename_axis('Runs From').reset_index(name='counts')
+
+
+    fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
+
+    approach.plot(ax =ax1, x='Approaches', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
+    indifferent.plot(ax =ax2, x='Indifferent', kind = 'bar', stacked=True, figsize=(10,7), legend = False, title='Behavior Types')
+    runs_from.plot(ax =ax3, x='Runs From', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
+
+    plt.savefig("behavior_type_plot.png", bbox_inches="tight")
 
 
 # research question 3
@@ -141,6 +161,9 @@ def main():
     shape_file = gpd.read_file(SHAPE_DATA)
 
     plot_squirrel_sightings(df, shape_file)
+    common_fur_colors(df)
+    common_highlight_colors(df)
+    common_behaviors(df)
 
     # for ML model: should we drop rows where all behaviors are labeled
     # false??
