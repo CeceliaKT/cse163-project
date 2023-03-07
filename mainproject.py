@@ -131,7 +131,7 @@ def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
     # set training + test data, test size
     X = pd.get_dummies(df.drop(columns=['Behavior']))
     y = df['Behavior']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     
     # fit model
     model = DecisionTreeClassifier()
@@ -180,12 +180,16 @@ GOF test.
 def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
     # to test result validity:
     # 1) filter df to observed behaviors
+    result = result[['Behavior']]
     # 2) create array to represent observed behaviors, append
     #    behaviors
-    # 3) calculate degrees of freedom (# of groups - 1)
+    observed = []
+    observed.append(result['Behavior'])
+    # 3) calculate degrees of freedom (# of groups - 1) = 2
     # 4) scipy.stats.chisquare(f_obs: array_like, f_exp: array_like,
     #                          dof: int)
-    pass
+    p_value = stats.chisquare(observed, expected, 2)
+    return p_value
 
 
 def main():
@@ -204,6 +208,7 @@ def main():
     filtered = processing.filter_behavior(df)
     # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
     result = add_behavior_column(filtered)
+    model_info = fit_and_predict_behavior(result, 0.2)
 
 
 if __name__ == '__main__':
