@@ -129,10 +129,27 @@ training and test data.
 def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
     # set features and labels, one-hot encode features
     # set training + test data, test size
+    X = pd.get_dummies(df.drop(columns=['Behavior']))
+    y = df['Behavior']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    
     # fit model
+    model = DecisionTreeClassifier()
+    model.fit(X_train, y_train)
+    
+    # make predictions on test data
+    y_pred_train = model.predict(X_train)
+    y_pred_test = model.predict(X_test)
+    
+    # calculate accuracy scores for training and test data
+    train_acc = accuracy_score(y_train, y_pred_train)
+    test_acc = accuracy_score(y_test, y_pred_test)
+
     # to save a model:
         # saved_model = pickle.dumps(model)
-    pass
+    saved_model = pickle.dumps(model)
+
+    return [saved_model, test_size, train_acc, test_acc]
 
 
 """
