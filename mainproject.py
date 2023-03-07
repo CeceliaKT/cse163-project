@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pickle
+from shapely.geometry import Point
+import contextily as cx
 
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
@@ -19,9 +21,10 @@ from scipy import stats
 
 from typing import Any
 
-import processing
+from processing import clean_data
 
 
+SHAPE_DATA = 'CentralAndProspectParks\\CentralPark.shp'
 # define functions
 
 # research question 1
@@ -29,8 +32,31 @@ import processing
 Takes in pandas DataFrame ??and GeoDataFrame??, returns
 a map of all squirrel sightings in Central Park.
 """
-def plot_squirrel_sightings(df: pd.DataFrame) -> None:
-    pass
+def plot_squirrel_sightings(df, shape_file) -> None:
+    coordinates = zip(df['X'], df['Y'])
+    df['coord'] = [Point(lon, lat) for lon, lat in coordinates]
+
+    df = gpd.GeoDataFrame(df, geometry='coord')
+    df.crs = shape_file.crs
+    new = df[['Hectare', 'coord', 'Unique Squirrel ID']]
+    new = new.dissolve(by='Hectare', aggfunc='count')
+
+    fig, ax = plt.subplots(1, figsize=(15, 7))
+
+    # data_test = data_test.plot(color='#EEEEEE')
+    test_new = shape_file.to_crs(epsg=3857)
+    shape_file = test_new.plot(ax=ax, alpha=0, color='#FFFFFF')
+    cx.add_basemap(shape_file, alpha=0.5)
+    # cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels)
+    # ax.set_axis_off()
+
+    data_new = new.to_crs(epsg=3857)
+    # df = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
+    # markersize=4, cmap='Spectral', legend=True)
+    data_new = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
+                             markersize=4, legend=True)
+    plt.title('Squirrel Population in Central Park')
+    plt.savefig('map.png')
 
 
 # research question 2
@@ -109,8 +135,12 @@ def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
 
 
 def main():
-    df = processing.clean_data()
+    df = clean_data()
     # run methods here
+    #shape_file = gpd.read_file(SHAPE_DATA)
+    shape_file = gpd.read_file(SHAPE_DATA)
+
+    plot_squirrel_sightings(df, shape_file)
 
     # for ML model: should we drop rows where all behaviors are labeled
     # false??
