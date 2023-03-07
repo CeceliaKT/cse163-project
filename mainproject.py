@@ -111,8 +111,16 @@ to predict the type of behavior a squirrel will exhibit based
 on its observed actions. Returns a list that contains the saved
 model, the test size, and accuracy scores of the training and test data.
 """
-def fit_and_predict_behavior(features: pd.DataFrame, labels: pd.Series,
-                             test_size: float) -> list[Any]:
+def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
+    # filtering data to squirrels that only exhibit one behavior
+    app = df['Approaches'] == True
+    indiff = df['Indifferent'] == True
+    run = df['Runs from'] == True
+    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
+    # set features to columns: 'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging'
+    # one-hot encode features, set features + labels
+    # set training + test data, test size
+    # fit model
     # to save a model:
         # saved_model = pickle.dumps(model)
     pass
@@ -164,11 +172,6 @@ def main():
     common_fur_colors(df)
     common_highlight_colors(df)
     common_behaviors(df)
-
-    # for ML model: should we drop rows where all behaviors are labeled
-    # false??
-    # identify features and labels of model, one-hot encode + run getdummies()
-    # on features
 
 
 if __name__ == '__main__':
