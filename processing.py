@@ -19,6 +19,10 @@ def clean_data() -> pd.DataFrame:
     return filtered
 
 
+"""
+Takes in a pandas DataFrame and returns a DataFrame that only includes squirrels
+who exhibited one behavior.
+"""
 def filter_behavior(df: pd.DataFrame) -> pd.DataFrame:
     app = df['Approaches'] == True
     indiff = df['Indifferent'] == True

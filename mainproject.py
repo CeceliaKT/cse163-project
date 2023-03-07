@@ -120,13 +120,14 @@ def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
 
 
 """
-Takes in a pandas DataFrame and Series that represent the features and
-labels of the model and a float test size. Trains DecisionTreeClassifier
-to predict the type of behavior a squirrel will exhibit based
-on its observed actions. Returns a list that contains the saved
-model, the test size, and accuracy scores of the training and test data.
+Takes in a pandas DataFrame and a float test size. Trains a
+DecisionTreeClassifier to predict the type of behavior a squirrel
+will exhibit based on its observed actions. Returns a list that
+contains the saved model, the test size, and accuracy scores of the
+training and test data.
 """
-def fit_and_predict_behavior(features: pd.DataFrame, labels: pd.Series, test_size: float) -> list[Any]:
+def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
+    # set features and labels, one-hot encode features
     # set training + test data, test size
     # fit model
     # to save a model:
@@ -175,7 +176,6 @@ def main():
 
     df = processing.clean_data()
     # run methods here
-    #shape_file = gpd.read_file(SHAPE_DATA)
     shape_file = gpd.read_file(SHAPE_DATA)
 
     plot_squirrel_sightings(df, shape_file)
@@ -187,7 +187,6 @@ def main():
     filtered = processing.filter_behavior(df)
     # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
     result = add_behavior_column(filtered)
-    # set features and labels, one-hot encode features
 
 
 if __name__ == '__main__':
