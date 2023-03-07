@@ -1,5 +1,5 @@
 """
-This program implements a function to read in our data and drop columns we don't need.
+This program implements functions to read in and organize our data and drop columns we don't need.
 """
 
 import pandas as pd
@@ -16,4 +16,12 @@ def clean_data() -> pd.DataFrame:
     filtered = squirrels[['X', 'Y', 'Unique Squirrel ID', 'Hectare', 'Age', 'Primary Fur Color', 'Highlight Fur Color',
                         'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging', 'Approaches',
                         'Indifferent', 'Runs from', 'Lat/Long']]
+    return filtered
+
+
+def filter_behavior(df: pd.DataFrame) -> pd.DataFrame:
+    app = df['Approaches'] == True
+    indiff = df['Indifferent'] == True
+    run = df['Runs from'] == True
+    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
     return filtered

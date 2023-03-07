@@ -21,18 +21,17 @@ from scipy import stats
 
 from typing import Any
 
-from processing import clean_data
+import processing
 
 
-SHAPE_DATA = 'CentralAndProspectParks\\CentralPark.shp'
 # define functions
 
 # research question 1
 """
-Takes in pandas DataFrame ??and GeoDataFrame??, returns
+Takes in pandas DataFrame and a shape file and returns
 a map of all squirrel sightings in Central Park.
 """
-def plot_squirrel_sightings(df, shape_file) -> None:
+def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
     coordinates = zip(df['X'], df['Y'])
     df['coord'] = [Point(lon, lat) for lon, lat in coordinates]
 
@@ -172,7 +171,9 @@ def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
 
 
 def main():
-    df = clean_data()
+    SHAPE_DATA = 'CentralAndProspectParks\\CentralPark.shp'
+
+    df = processing.clean_data()
     # run methods here
     #shape_file = gpd.read_file(SHAPE_DATA)
     shape_file = gpd.read_file(SHAPE_DATA)
@@ -183,10 +184,7 @@ def main():
     common_behaviors(df)
 
     # filtering data to squirrels that only exhibit one behavior for question 3
-    app = df['Approaches'] == True
-    indiff = df['Indifferent'] == True
-    run = df['Runs from'] == True
-    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
+    filtered = processing.filter_behavior(df)
     # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
     result = add_behavior_column(filtered)
     # set features and labels, one-hot encode features
