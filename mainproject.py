@@ -26,6 +26,7 @@ import processing
 
 # define functions
 
+
 # research question 1
 """
 Takes in pandas DataFrame and a shape file and returns
@@ -55,6 +56,7 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
                              markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
     plt.savefig('map.png')
+    
 
 
 # research question 2
@@ -180,8 +182,7 @@ GOF test.
 def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
     # to test result validity:
     # 1) filter df to observed behaviors
-    # 2) create array to represent observed behaviors, append
-    #    behaviors
+    # 2) create array to represent observed behaviors
     observed = df['Behavior'].tolist()
     # 3) calculate degrees of freedom (# of groups - 1) = 2
     # 4) scipy.stats.chisquare(f_obs: array_like, f_exp: array_like,
@@ -191,7 +192,7 @@ def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
 
 
 def main():
-    SHAPE_DATA = 'CentralAndProspectParks\\CentralPark.shp'
+    SHAPE_DATA = 'CentralAndProspectParks//CentralPark.shp'
 
     df = processing.clean_data()
     # run methods here
