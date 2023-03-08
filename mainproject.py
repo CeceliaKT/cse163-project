@@ -150,23 +150,19 @@ def fit_and_predict_behavior(df: pd.DataFrame) -> pd.DataFrame:
     return results_df
 
 
-"""
-Takes in a list of the saved model, test size, and accuracy scores of
-the training and test data, runs the DecisionTreeClassifier with the
-highest accuracy score and plots the most important features of that
-model. Returns an array of predictions on the test data.
-"""
-def plot_feature_importance(info: list[Any]) -> np.ndarray:
-   # to load saved model:
-        # model_from_pickle = pickle.loads(saved_model)
-   # to make predictions w/ saved model:
-        # model_from_pickle.predict(insert data here)
-    
-   # run DecisionTreeClassifier w/ highest accuracy
-   # feat_importances = pd.Series(model.feature_importances_,
-   #                              index=X.columns)
-   # feat_importances.nlargest(NUMBER OF FEATURES).plot(kind='barh)
-   pass
+def plot_feature_importance(df: pd.DataFrame) -> None:
+    """
+    Creates a bar chart of the feature importance scores from a DataFrame
+    produced by the fit_and_predict_behavior function
+    """
+    results_df = df.sort_values(by='Accuracy', ascending=False)
+    results_df['Feature Names'] = df['Features'].apply(lambda x: ', '.join(x))
+    fig, ax = plt.subplots(1, figsize=(15, 7))
+    plt.barh(results_df['Feature Names'], results_df['Accuracy'])
+    plt.xlabel('Accuracy Score')
+    plt.ylabel("Feature Combinations")
+    plt.title('Feature Importance Scores')
+    plt.savefig('feature_score.png')
 
 
 # research question 4
