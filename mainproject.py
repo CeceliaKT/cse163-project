@@ -192,11 +192,11 @@ def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
 
 
 def main():
-    SHAPE_DATA = 'CentralAndProspectParks//CentralPark.shp'
+    shape_data = 'CentralAndProspectParks//CentralPark.shp'
 
     df = processing.clean_data()
     # run methods here
-    shape_file = gpd.read_file(SHAPE_DATA)
+    shape_file = gpd.read_file(shape_data)
 
     plot_squirrel_sightings(df, shape_file)
     common_fur_colors(df)
