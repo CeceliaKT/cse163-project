@@ -180,11 +180,9 @@ GOF test.
 def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
     # to test result validity:
     # 1) filter df to observed behaviors
-    result = result[['Behavior']]
     # 2) create array to represent observed behaviors, append
     #    behaviors
-    observed = []
-    observed.append(result['Behavior'])
+    observed = df['Behavior'].tolist()
     # 3) calculate degrees of freedom (# of groups - 1) = 2
     # 4) scipy.stats.chisquare(f_obs: array_like, f_exp: array_like,
     #                          dof: int)
