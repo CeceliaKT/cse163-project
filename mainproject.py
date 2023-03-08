@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pickle
+import itertools
 from shapely.geometry import Point
 import contextily as cx
 
@@ -121,37 +122,32 @@ def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-"""
-Takes in a pandas DataFrame and a float test size. Trains a
-DecisionTreeClassifier to predict the type of behavior a squirrel
-will exhibit based on its observed actions. Returns a list that
-contains the saved model, the test size, and accuracy scores of the
-training and test data.
-"""
-def fit_and_predict_behavior(df: pd.DataFrame, test_size: float) -> list[Any]:
-    # set features and labels, one-hot encode features
-    # set training + test data, test size
+def fit_and_predict_behavior(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Trains and tests Decision Tree models with different feature combinations.
+    Returns a DataFrame with the feature combinations and their accuracy scores.
+    """
+    # Defining the features to use
+    features = df.drop(columns=['X', 'Y', 'Unique Squirrel ID'])
+
+    # Generate all possible combinations of features
     X = pd.get_dummies(df.drop(columns=['Behavior']))
     y = df['Behavior']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
-    
-    # fit model
-    model = DecisionTreeClassifier()
-    model.fit(X_train, y_train)
-    
-    # make predictions on test data
-    y_pred_train = model.predict(X_train)
-    y_pred_test = model.predict(X_test)
-    
-    # calculate accuracy scores for training and test data
-    train_acc = accuracy_score(y_train, y_pred_train)
-    test_acc = accuracy_score(y_test, y_pred_test)
+    feature_names = X.columns.tolist()
 
-    # to save a model:
-        # saved_model = pickle.dumps(model)
-    saved_model = pickle.dumps(model)
-
-    return [saved_model, test_size, train_acc, test_acc]
+    results = []
+    for n in range(3, len(feature_names) + 1):
+        for combo in itertools.combinations(feature_names, n):
+            X_subset = X[list(combo)]
+            X_train, X_test, y_train, y_test = train_test_split(X_subset, y, test_size = 0.2)
+            model = DecisionTreeClassifier()
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            accuracy = acccuracy_score(y_test, y_pred)
+            results.append((combo, accuracy))
+    
+    results_df = pd.DataFrame(results, columns=['Features', 'Accuracy'])
+    return results_df
 
 
 """
