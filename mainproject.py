@@ -29,11 +29,11 @@ import processing
 
 
 # research question 1
-"""
-Takes in pandas DataFrame and a shape file and returns
-a map of all squirrel sightings in Central Park.
-"""
 def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
+    """
+    Takes in pandas DataFrame and a shape file and returns
+    a map of all squirrel sightings in Central Park.
+    """
     coordinates = zip(df['X'], df['Y'])
     df['coord'] = [Point(lon, lat) for lon, lat in coordinates]
 
@@ -61,11 +61,11 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
 
 
 # research question 2
-"""
-Takes in a pandas DataFrame and creates a bar chart of the
-most common fur colors. Returns None.
-"""
 def common_fur_colors(df: pd.DataFrame) -> None:
+    """
+    Takes in a pandas DataFrame and creates a bar chart of the
+    most common fur colors. Returns None.
+    """
     fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
 
     sns.catplot(data = fur_color, x = 'Primary Fur Color', y = 'counts', kind = 'bar')
@@ -74,11 +74,11 @@ def common_fur_colors(df: pd.DataFrame) -> None:
     plt.savefig("fur_color_plot.png", bbox_inches="tight")  
 
 
-"""
-Takes in a pandas DataFrame and creates a bar chart of the
-most common highlight colors. Returns None.
-"""
 def common_highlight_colors(df: pd.DataFrame) -> None:
+    """
+    Takes in a pandas DataFrame and creates a bar chart of the
+    most common highlight colors. Returns None.
+    """
     highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
     sns.catplot(data = highlight_color, x = 'Highlight Fur Color', y = 'counts', kind = 'bar')
     plt.ylabel("Count")
@@ -87,11 +87,11 @@ def common_highlight_colors(df: pd.DataFrame) -> None:
     plt.savefig("highlight_color_plot.png", bbox_inches="tight")
 
 
-"""
-Takes in a pandas DataFrame and creates a bar chart of the
-most common behaviors. Returns None.
-"""
 def common_behaviors(df: pd.DataFrame) -> None:
+    """
+    Takes in a pandas DataFrame and creates a bar chart of the
+    most common behaviors. Returns None.
+    """
     approach = df['Approaches'].value_counts().rename_axis('Approaches').reset_index(name='counts')
     indifferent = df['Indifferent'].value_counts().rename_axis('Indifferent').reset_index(name='counts')
     runs_from = df['Runs from'].value_counts().rename_axis('Runs From').reset_index(name='counts')
@@ -107,12 +107,12 @@ def common_behaviors(df: pd.DataFrame) -> None:
 
 
 # research question 3
-"""
-Takes in a pandas DataFrame, creates a new column that represents
-the type of behavior exhibited by the squirrel, and returns the new
-DataFrame.
-"""
 def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes in a pandas DataFrame, creates a new column that represents
+    the type of behavior exhibited by the squirrel, and returns the new
+    DataFrame.
+    """
     conditions = [(df['Approaches'] == True),
                   (df['Indifferent'] == True),
                   (df['Runs from'] == True)
@@ -163,12 +163,12 @@ def plot_feature_importance(df: pd.DataFrame) -> None:
 
 
 # research question 4
-"""
-Takes in a pandas DataFrame and an array of predictions on the test
-data, returns a float that represents the p-value of the chi-square
-GOF test.
-"""
 def determine_validity(df: pd.DataFrame, expected: np.ndarray) -> float:
+    """
+    Takes in a pandas DataFrame and an array of predictions on the test
+    data, returns a float that represents the p-value of the chi-square
+    GOF test.
+    """
     # to test result validity:
     # 1) filter df to observed behaviors
     # 2) create array to represent observed behaviors
