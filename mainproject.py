@@ -127,11 +127,8 @@ def fit_and_predict_behavior(df: pd.DataFrame) -> pd.DataFrame:
     Trains and tests Decision Tree models with different feature combinations.
     Returns a DataFrame with the feature combinations and their accuracy scores.
     """
-    # Defining the features to use
-    features = df.drop(columns=['X', 'Y', 'Unique Squirrel ID'])
-
     # Generate all possible combinations of features
-    X = pd.get_dummies(df.drop(columns=['Behavior']))
+    X = pd.get_dummies(df.drop(columns=['X', 'Y', 'Unique Squirrel ID','Behavior']))
     y = df['Behavior']
     feature_names = X.columns.tolist()
 
@@ -143,7 +140,7 @@ def fit_and_predict_behavior(df: pd.DataFrame) -> pd.DataFrame:
             model = DecisionTreeClassifier()
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
-            accuracy = acccuracy_score(y_test, y_pred)
+            accuracy = accuracy_score(y_test, y_pred)
             results.append((combo, accuracy))
     
     results_df = pd.DataFrame(results, columns=['Features', 'Accuracy'])
@@ -195,11 +192,15 @@ def main():
     common_highlight_colors(df)
     common_behaviors(df)
 
+    full_df = add_behavior_column(df)
+    feature_df = fit_and_predict_behavior(full_df)
+    plot_feature_importance(feature_df)
+
     # filtering data to squirrels that only exhibit one behavior for question 3
     filtered = processing.filter_behavior(df)
     # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
-    result = add_behavior_column(filtered)
-    model_info = fit_and_predict_behavior(result, 0.2)
+    # result = add_behavior_column(filtered)
+    # model_info = fit_and_predict_behavior(result, 0.2)
 
 
 if __name__ == '__main__':
