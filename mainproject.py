@@ -17,6 +17,7 @@ import contextily as cx
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 
 from scipy import stats
 
@@ -56,7 +57,7 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
     new = new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
                              markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
-    plt.savefig('map.png')
+    # plt.savefig('map.png')
     
 
 
@@ -71,7 +72,7 @@ def common_fur_colors(df: pd.DataFrame) -> None:
     sns.catplot(data = fur_color, x = 'Primary Fur Color', y = 'counts', kind = 'bar')
     plt.ylabel("Count")
     plt.title("Prevalence of Fur Color")
-    plt.savefig("fur_color_plot.png", bbox_inches="tight")  
+    # plt.savefig("fur_color_plot.png", bbox_inches="tight")  
 
 
 def common_highlight_colors(df: pd.DataFrame) -> None:
@@ -84,7 +85,7 @@ def common_highlight_colors(df: pd.DataFrame) -> None:
     plt.ylabel("Count")
     plt.xticks(rotation='vertical')
     plt.title("Prevalence of Fur Highlight Color")
-    plt.savefig("highlight_color_plot.png", bbox_inches="tight")
+    # plt.savefig("highlight_color_plot.png", bbox_inches="tight")
 
 
 def common_behaviors(df: pd.DataFrame) -> None:
@@ -103,7 +104,7 @@ def common_behaviors(df: pd.DataFrame) -> None:
     indifferent.plot(ax =ax2, x='Indifferent', kind = 'bar', stacked=True, figsize=(10,7), legend = False, title='Behavior Types')
     runs_from.plot(ax =ax3, x='Runs From', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
 
-    plt.savefig("behavior_type_plot.png", bbox_inches="tight")
+    # plt.savefig("behavior_type_plot.png", bbox_inches="tight")
 
 
 # research question 3
@@ -118,46 +119,42 @@ def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
                   (df['Runs from'] == True)
                   ]
     values = ['Approaches', 'Indifferent', 'Runs from']
+    df = df.drop(columns=['Approaches', 'Indifferent', 'Runs from'])
     df['Behavior'] = np.select(conditions, values)
     return df
 
 
-def fit_and_predict_behavior(df: pd.DataFrame) -> pd.DataFrame:
+def fit_and_predict_behavior(df: pd.DataFrame):
     """
-    Trains and tests Decision Tree models with different feature combinations.
-    Returns a DataFrame with the feature combinations and their accuracy scores.
+    Trains and tests a Random Forest Classifer with different feature combinations.
+    Returns a tuple containing the resulting DataFrame and the trained model.
     """
-    # Generate all possible combinations of features
-    X = pd.get_dummies(df.drop(columns=['X', 'Y', 'Unique Squirrel ID','Behavior']))
+    df = df.drop(columns=['X', 'Y', 'Lat/Long', 'Unique Squirrel ID', 'Hectare', 'Highlight Fur Color'])
+    X = pd.get_dummies(df.drop(columns=['Behavior']))
     y = df['Behavior']
-    feature_names = X.columns.tolist()
 
-    results = []
-    for n in range(3, len(feature_names) + 1):
-        for combo in itertools.combinations(feature_names, n):
-            X_subset = X[list(combo)]
-            X_train, X_test, y_train, y_test = train_test_split(X_subset, y, test_size = 0.2)
-            model = DecisionTreeClassifier()
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            accuracy = accuracy_score(y_test, y_pred)
-            results.append((combo, accuracy))
-    
-    results_df = pd.DataFrame(results, columns=['Features', 'Accuracy'])
-    return results_df
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # Fit a Random Forest Classifier
+    rfc = RandomForestClassifier()
+    rfc.fit(X_train, y_train)
+
+    return X_train, rfc
 
 
-def plot_feature_importance(df: pd.DataFrame) -> None:
+def plot_feature_importance(X_train , rfc) -> None:
     """
-    Creates a bar chart of the feature importance scores from a DataFrame
-    produced by the fit_and_predict_behavior function
+    Creates a bar chart of the feature importances of the Random Foreset
+    Classifier.
     """
-    results_df = df.sort_values(by='Accuracy', ascending=False)
-    results_df['Feature Names'] = df['Features'].apply(lambda x: ', '.join(x))
-    fig, ax = plt.subplots(1, figsize=(15, 7))
-    plt.barh(results_df['Feature Names'], results_df['Accuracy'])
-    plt.xlabel('Accuracy Score')
-    plt.ylabel("Feature Combinations")
+    importances = rfc.feature_importances_
+    indices = np.argsort(importances)
+    fig, ax = plt.subplots(1, figsize=(20, 7))
+
+    plt.barh(range(len(importances)), importances[indices])
+    plt.xlabel("Feature Importance")
+    ax.set_yticks(range(len(importances)))
+    _ = ax.set_yticklabels(np.array(X_train.columns)[indices])
     plt.title('Feature Importance Scores')
     plt.savefig('feature_score.png')
 
@@ -184,6 +181,7 @@ def main():
     shape_data = 'CentralAndProspectParks//CentralPark.shp'
 
     df = processing.clean_data()
+    filtered = processing.filter_behavior(df)
     # run methods here
     shape_file = gpd.read_file(shape_data)
 
@@ -192,15 +190,9 @@ def main():
     common_highlight_colors(df)
     common_behaviors(df)
 
-    full_df = add_behavior_column(df)
-    feature_df = fit_and_predict_behavior(full_df)
-    plot_feature_importance(feature_df)
-
-    # filtering data to squirrels that only exhibit one behavior for question 3
-    filtered = processing.filter_behavior(df)
-    # new dataframe w/ added column to represent behavior exhibited (use new column as label!)
-    # result = add_behavior_column(filtered)
-    # model_info = fit_and_predict_behavior(result, 0.2)
+    full_df = add_behavior_column(filtered)
+    X_train, rfc = fit_and_predict_behavior(full_df)
+    plot_feature_importance(X_train, rfc)
 
 
 if __name__ == '__main__':
