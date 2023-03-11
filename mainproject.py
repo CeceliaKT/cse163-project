@@ -132,7 +132,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     features = pd.get_dummies(features)
     labels = df['Behavior']
     features_train, features_test, labels_train, labels_test = \
-        train_test_split(features, labels, test_size=0.2)
+        train_test_split(features, labels, test_size=0.23)
     model = RandomForestClassifier()
     model.fit(features_train, labels_train)
     # train_predictions = model.predict(features_train)
@@ -210,7 +210,9 @@ def main():
     plot_common_behaviors(df)
 
     filtered = processing.filter_behavior(df)
-    full_df = add_behavior_column(filtered)
+    no_null_age = processing.drop_null_age(filtered)
+    full_df = add_behavior_column(no_null_age)
+    fit_behavior(full_df)
     model_info = fit_behavior(full_df)
     plot_feature_importance(model_info)
     p_value = determine_validity(model_info, full_df)
