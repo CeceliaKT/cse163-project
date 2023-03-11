@@ -14,10 +14,10 @@ def clean_data() -> pd.DataFrame:
     # only include:
     # 'X', 'Y', 'Hectare', 'Age', 'Primary Fur Color', 'Highlight Fur Color',
     # 'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging', 'Approaches',
-    # 'Indifferent', 'Runs from', 'Lat/Long'
+    # 'Indifferent', 'Runs from'
     filtered = squirrels[['X', 'Y', 'Unique Squirrel ID', 'Hectare', 'Age', 'Primary Fur Color', 'Highlight Fur Color',
                         'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging', 'Approaches',
-                        'Indifferent', 'Runs from', 'Lat/Long']]
+                        'Indifferent', 'Runs from']]
     return filtered
 
 
