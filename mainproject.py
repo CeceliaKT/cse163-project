@@ -103,22 +103,6 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 
 
 # research question 3
-def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Takes in a pandas DataFrame, creates a new column that represents
-    the type of behavior exhibited by the squirrel, and returns the new
-    DataFrame.
-    """
-    conditions = [(df['Approaches'] == True),
-                  (df['Indifferent'] == True),
-                  (df['Runs from'] == True)
-                  ]
-    values = ['Approaches', 'Indifferent', 'Runs from']
-    df = df.drop(columns=['Approaches', 'Indifferent', 'Runs from'])
-    df['Behavior'] = np.select(conditions, values)
-    return df
-
-
 def fit_behavior(df: pd.DataFrame) -> list[Any]:
     """
     Trains and tests a Random Forest Classifer with different feature combinations.
@@ -211,7 +195,7 @@ def main():
 
     filtered = processing.filter_behavior(df)
     no_null_age = processing.drop_null_age(filtered)
-    full_df = add_behavior_column(no_null_age)
+    full_df = processing.add_behavior_column(no_null_age)
     fit_behavior(full_df)
     model_info = fit_behavior(full_df)
     plot_feature_importance(model_info)

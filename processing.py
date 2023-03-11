@@ -4,6 +4,7 @@ This program implements functions to read in and organize our data and drop colu
 
 
 import pandas as pd
+import numpy as np
 
 
 def clean_data() -> pd.DataFrame:
@@ -19,6 +20,22 @@ def clean_data() -> pd.DataFrame:
                         'Running', 'Chasing', 'Climbing', 'Eating', 'Foraging', 'Approaches',
                         'Indifferent', 'Runs from']]
     return filtered
+
+
+def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes in a pandas DataFrame, creates a new column that represents
+    the type of behavior exhibited by the squirrel, and returns the new
+    DataFrame.
+    """
+    conditions = [(df['Approaches'] == True),
+                  (df['Indifferent'] == True),
+                  (df['Runs from'] == True)
+                  ]
+    values = ['Approaches', 'Indifferent', 'Runs from']
+    df = df.drop(columns=['Approaches', 'Indifferent', 'Runs from'])
+    df['Behavior'] = np.select(conditions, values)
+    return df
 
 
 def filter_behavior(df: pd.DataFrame) -> pd.DataFrame:
