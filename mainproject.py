@@ -9,13 +9,9 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-import pickle
-import itertools
 from shapely.geometry import Point
 import contextily as cx
 
-from sklearn.metrics import accuracy_score
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
@@ -25,9 +21,9 @@ from typing import Any
 
 import processing
 
+sns.set()
 
 # define functions
-
 
 # research question 1
 def plot_squirrel_sightings(df: pd.DataFrame, shape_file) -> None:
