@@ -12,7 +12,7 @@ import numpy as np
 from shapely.geometry import Point
 import contextily as cx
 
-from sklearn.metrics import accuracy_score
+# from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
