@@ -12,9 +12,9 @@ import numpy as np
 from shapely.geometry import Point
 import contextily as cx
 
-# from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import RandomizedSearchCV, train_test_split
+from sklearn.metrics import accuracy_score
 
 from scipy.stats import chisquare
 
@@ -105,25 +105,71 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 # research question 3
 def fit_behavior(df: pd.DataFrame) -> list[Any]:
     """
-    Trains and tests a Random Forest Classifer with different feature combinations.
-    Returns a list containing the trained model, the DataFrame with columns of
-    features used to train the model, and the two DataFrames with columns of
-    features and labels that will be used to test the model.
+    Trains and tests a RandomForestClassifier. Returns a list containing the
+    trained model, the DataFrame with columns of features used to train the model,
+    and the two DataFrames with columns of features and labels that will be used
+    to test the model.
     """
+    # process data + split up into training and test datasets
     df = df.drop(columns=['X', 'Y', 'coord', 'Unique Squirrel ID', 'Hectare',
                           'Highlight Fur Color'])
     features = df.loc[:, df.columns != 'Behavior']
     features = pd.get_dummies(features)
     labels = df['Behavior']
     features_train, features_test, labels_train, labels_test = \
-        train_test_split(features, labels, test_size=0.23)
-    model = RandomForestClassifier()
-    model.fit(features_train, labels_train)
-    # train_predictions = model.predict(features_train)
-    # test_predictions = model.predict(features_test)
-    # train_acc = accuracy_score(labels_train, train_predictions)
-    # test_acc = accuracy_score(labels_test, test_predictions)
-    return [model, features_train, features_test, labels_test]
+        train_test_split(features, labels, test_size=0.28,
+                         random_state = 42)
+    
+    # create a random forest classifier
+    rf = RandomForestClassifier()
+
+    # fit the model to the data
+    rf.fit(features_train, labels_train)
+
+    # accuracy
+    training_pred1 = rf.predict(features_train)
+    test_pred1 = rf.predict(features_test)
+    print('Training accuracy:', accuracy_score(labels_train, training_pred1))
+    print('Test accuracy:', accuracy_score(labels_test, test_pred1))
+
+    # number of trees in random forest
+    n_estimators = np.linspace(100, 3000, int((3000 - 100) / 200) + 1,
+                               dtype=int)
+    # number of features to consider at every split
+    max_features = ['sqrt']
+    # maximum number of levels in tree
+    max_depth = [1, 5, 10, 20, 50, 75, 100, 150, 200]
+    # minimum number of samples required to split a node
+    min_samples_split = [1, 2, 5, 10, 15, 20, 30]
+    # minimum number of samples required at each leaf node
+    min_samples_leaf = [1, 2, 3, 4]
+    # method of selecting samples for training each tree
+    bootstrap = [True, False]
+    # criterion
+    criterion = ['gini', 'entropy']
+
+    random_grid = {'n_estimators': n_estimators,
+                   'max_features': max_features,
+                   'max_depth': max_depth,
+                   'min_samples_split': min_samples_split,
+                   'min_samples_leaf': min_samples_leaf,
+                   'bootstrap': bootstrap,
+                   'criterion': criterion}
+    
+    rf_base = RandomForestClassifier()
+    rf_random = RandomizedSearchCV(estimator = rf_base,
+                                   param_distributions = random_grid,
+                                   n_iter = 30, cv = 5,
+                                   verbose = 2,
+                                   random_state = 42, n_jobs = 4)
+    rf_random.fit(features_train, labels_train)
+    print('Best hyperparameters:', rf_random.best_params_)
+    training_pred2 = rf_random.predict(features_train)
+    test_pred2 = rf_random.predict(features_test)
+    print('Training accuracy:', accuracy_score(labels_train, training_pred2))
+    print('Test accuracy:', accuracy_score(labels_test, test_pred2))
+    
+    return [rf, features_train, features_test, labels_test]
 
 
 def plot_feature_importance(model_info: list[Any]) -> None:
@@ -194,9 +240,8 @@ def main():
     plot_common_behaviors(df)
 
     filtered = processing.filter_behavior(df)
-    no_null_age = processing.drop_null_age(filtered)
-    full_df = processing.add_behavior_column(no_null_age)
-    fit_behavior(full_df)
+    added_column = processing.add_behavior_column(filtered)
+    full_df = processing.drop_null(added_column)
     model_info = fit_behavior(full_df)
     plot_feature_importance(model_info)
     p_value = determine_validity(model_info, full_df)

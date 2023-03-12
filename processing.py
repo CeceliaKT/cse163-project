@@ -22,6 +22,18 @@ def clean_data() -> pd.DataFrame:
     return filtered
 
 
+def filter_behavior(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes in a pandas DataFrame and returns a DataFrame that only includes squirrels
+    who exhibited one behavior.
+    """
+    app = df['Approaches'] == True
+    indiff = df['Indifferent'] == True
+    run = df['Runs from'] == True
+    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
+    return filtered
+
+
 def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
     """
     Takes in a pandas DataFrame, creates a new column that represents
@@ -38,23 +50,12 @@ def add_behavior_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def filter_behavior(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Takes in a pandas DataFrame and returns a DataFrame that only includes squirrels
-    who exhibited one behavior.
-    """
-    app = df['Approaches'] == True
-    indiff = df['Indifferent'] == True
-    run = df['Runs from'] == True
-    filtered = df[(app & ~indiff & ~run) | (indiff & ~app & ~run) | (run & ~app & ~indiff)]
-    return filtered
-
-
-def drop_null_age(df: pd.DataFrame) -> pd.DataFrame:
+def drop_null(df: pd.DataFrame) -> pd.DataFrame:
     """
     Takes in a pandas DataFrame and returns a DataFrame that only includes squirrels
     who have a defined age.
     """
     df[['Age']].replace('', pd.NA)
-    filtered = df.dropna(subset=['Age'])
+    df[['Primary Fur Color']].replace('', pd.NA)
+    filtered = df.dropna(subset=['Age', 'Primary Fur Color'])
     return filtered
