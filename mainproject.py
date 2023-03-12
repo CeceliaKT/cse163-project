@@ -1,5 +1,6 @@
 """
-This will implement our program
+This program implements functions to process, visualize, predict, and verify
+outcomes about data from the 2018 New York City Squirrel Census dataset.
 """
 
 
@@ -14,9 +15,7 @@ import contextily as cx
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
-from sklearn.metrics import accuracy_score
-
-from scipy.stats import chisquare
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay, f1_score, precision_score, recall_score
 
 from typing import Any
 
@@ -52,9 +51,8 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file: Any) -> None:
     new = new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
                              markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
-    # plt.savefig('map.png')
+    plt.savefig('map.png')
     
-
 
 # research question 2
 def plot_common_fur_colors(df: pd.DataFrame) -> None:
@@ -65,9 +63,9 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
 
     sns.catplot(data = fur_color, x = 'Primary Fur Color', y = 'counts', kind = 'bar')
-    plt.ylabel("Count")
-    plt.title("Prevalence of Fur Color")
-    # plt.savefig("fur_color_plot.png", bbox_inches="tight")  
+    plt.ylabel('Count')
+    plt.title('Prevalence of Fur Color')
+    plt.savefig('fur_color_plot.png', bbox_inches='tight')  
 
 
 def plot_common_highlight_colors(df: pd.DataFrame) -> None:
@@ -77,10 +75,10 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     """
     highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
     sns.catplot(data = highlight_color, x = 'Highlight Fur Color', y = 'counts', kind = 'bar')
-    plt.ylabel("Count")
+    plt.ylabel('Count')
     plt.xticks(rotation='vertical')
-    plt.title("Prevalence of Fur Highlight Color")
-    # plt.savefig("highlight_color_plot.png", bbox_inches="tight")
+    plt.title('Prevalence of Fur Highlight Color')
+    plt.savefig('highlight_color_plot.png', bbox_inches='tight')
 
 
 def plot_common_behaviors(df: pd.DataFrame) -> None:
@@ -98,7 +96,7 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
     indifferent.plot(ax =ax2, x='Indifferent', kind = 'bar', stacked=True, figsize=(10,7), legend = False, title='Behavior Types')
     runs_from.plot(ax =ax3, x='Runs From', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
 
-    # plt.savefig("behavior_type_plot.png", bbox_inches="tight")
+    plt.savefig('behavior_type_plot.png', bbox_inches='tight')
 
 
 # research question 3
@@ -181,16 +179,16 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
                                     max_features=hp['max_features'],
                                     bootstrap=hp['bootstrap'])
     new_rf.fit(features_train, labels_train)
-    return [new_rf, features_train, features_test, labels_test]
+    return [new_rf, features_test, labels_test]
 
 
-def plot_feature_importance(model_info: list[Any]) -> None:
+def plot_feature_importance(model: RandomForestClassifier,
+                            features: list[Any]) -> None:
     """
-    Creates a bar chart of the feature importances of the Random Forest
-    Classifier.
+    Takes in a RandomForestClassifier and a list that represents the
+    features of the model. Creates a bar chart of the feature importances
+    of the model.
     """
-    model = model_info[0]
-    features_train = model_info[1]
     importances = model.feature_importances_
     indices = np.argsort(importances)
     fig, ax = plt.subplots(1, figsize=(20, 7))
@@ -198,46 +196,52 @@ def plot_feature_importance(model_info: list[Any]) -> None:
     plt.barh(range(len(importances)), importances[indices])
     plt.xlabel("Feature Importance")
     ax.set_yticks(range(len(importances)))
-    _ = ax.set_yticklabels(np.array(features_train.columns)[indices])
+    _ = ax.set_yticklabels(np.array(features.columns)[indices])
     plt.title('Feature Importance Scores')
-    # plt.savefig('feature_score.png')
+    plt.savefig('feature_score.png')
 
 
 # research question 4
-def determine_validity(model_info: list[Any], df: pd.DataFrame) -> float:
+def verify_results(model: RandomForestClassifier,
+                   features_test: list[Any], labels_test: list[Any]) -> None:
     """
-    Takes in a list of information about the model and a pandas DataFrame,
-    returns a float that represents the p-value of a chi-square GOF test.
-    Null hypothesis is that the model predictions are the same as the
-    behaviors listed in the DataFrame.
+    Takes in a RandomForestClassifier and lists that represents the features
+    and labels used to test the model. Calculates the precision, recall, and
+    F1 score of the model and plots a confusion matrix comparing the actual
+    and predicted squirrel behaviors. 
     """
-    model = model_info[0]
-    features_test = model_info[2]
-    labels_test = model_info[3]
-    df = df.drop(columns=['X', 'Y', 'coord', 'Unique Squirrel ID', 'Hectare',
-                          'Highlight Fur Color'])
-    predictions = model.predict(features_test)
-    # 1) filter df to observed behaviors
-    # 2) create array to represent observed behaviors
-    data_obs = labels_test.tolist()
-    expected = [0, 0, 0]
-    observed = [0, 0, 0]
-    for behavior in predictions:
-        if behavior == 'Approaches':
-            expected[0] += 1
-        elif behavior == 'Indifferent':
-            expected[1] += 1
-        else:
-            expected[2] += 1
-    for behavior in data_obs:
-        if behavior == 'Approaches':
-            observed[0] += 1
-        elif behavior == 'Indifferent':
-            observed[1] += 1
-        else:
-            observed[2] += 1
-    chi_square_test_statistic, p_value = chisquare(observed, expected)
-    return p_value
+    y_true = labels_test
+    y_pred = model.predict(features_test)
+
+    # calc precision, recall, f1 score
+    print('Precision:', precision_score(y_true=y_true, y_pred=y_pred,
+                                        labels=['Approaches', 'Indifferent',
+                                                'Runs from'],
+                                        average='weighted',
+                                        zero_division=0))
+    print('Recall:', recall_score(y_true=y_true, y_pred=y_pred,
+                                  labels = ['Approaches', 'Indifferent',
+                                            'Runs from'],
+                                  average='weighted'))
+    print('F1:', f1_score(y_true=y_true, y_pred=y_pred,
+                          labels = ['Approaches', 'Indifferent',
+                                    'Runs from'],
+                          average='weighted'))
+
+    # plot confusion matrix
+    cm = confusion_matrix(y_true=y_true, y_pred=y_pred,
+                          labels=['Approaches', 'Indifferent',
+                                  'Runs from'])
+    print('Confusion matrix:')
+    print(cm)
+    cm_df = pd.DataFrame(cm, index=['Approaches', 'Indifferent', 'Runs from'],
+                         columns=['Approaches', 'Indifferent', 'Runs from'])
+    plt.figure(figsize=(5, 5))
+    sns.heatmap(cm_df, annot=True, cmap='Blues', fmt='d')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Actual Values')
+    plt.title('Confusion Matrix')
+    plt.savefig('confusion_matrix.png')    
 
 
 def main():
@@ -255,9 +259,8 @@ def main():
     added_column = processing.add_behavior_column(filtered)
     full_df = processing.drop_null(added_column)
     model_info = fit_behavior(full_df)
-    plot_feature_importance(model_info)
-    # p_value = determine_validity(model_info, full_df)
-    # print(p_value)
+    plot_feature_importance(model_info[0], model_info[1])
+    verify_results(model_info[0], model_info[1], model_info[2])
 
 
 if __name__ == '__main__':
