@@ -92,7 +92,6 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
     indifferent = df['Indifferent'].value_counts().rename_axis('Indifferent').reset_index(name='counts')
     runs_from = df['Runs from'].value_counts().rename_axis('Runs From').reset_index(name='counts')
 
-
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
     approach.plot(ax =ax1, x='Approaches', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
@@ -129,6 +128,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     # accuracy
     training_pred1 = rf.predict(features_train)
     test_pred1 = rf.predict(features_test)
+    print('Base RandomForestClassifier:')
     print('Training accuracy:', accuracy_score(labels_train, training_pred1))
     print('Test accuracy:', accuracy_score(labels_test, test_pred1))
 
@@ -156,6 +156,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
                    'bootstrap': bootstrap,
                    'criterion': criterion}
     
+    # find best RandomForestClassifier
     rf_base = RandomForestClassifier()
     rf_random = RandomizedSearchCV(estimator = rf_base,
                                    param_distributions = random_grid,
@@ -166,10 +167,21 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     print('Best hyperparameters:', rf_random.best_params_)
     training_pred2 = rf_random.predict(features_train)
     test_pred2 = rf_random.predict(features_test)
+    print('Adjusted RandomForestClassifier:')
     print('Training accuracy:', accuracy_score(labels_train, training_pred2))
     print('Test accuracy:', accuracy_score(labels_test, test_pred2))
     
-    return [rf, features_train, features_test, labels_test]
+    # fit best model
+    hp = rf_random.best_params_
+    new_rf = RandomForestClassifier(n_estimators=hp['n_estimators'],
+                                    criterion=hp['criterion'],
+                                    max_depth=hp['max_depth'],
+                                    min_samples_split=hp['min_samples_split'],
+                                    min_samples_leaf=hp['min_samples_leaf'],
+                                    max_features=hp['max_features'],
+                                    bootstrap=hp['bootstrap'])
+    new_rf.fit(features_train, labels_train)
+    return [new_rf, features_train, features_test, labels_test]
 
 
 def plot_feature_importance(model_info: list[Any]) -> None:
@@ -200,14 +212,14 @@ def determine_validity(model_info: list[Any], df: pd.DataFrame) -> float:
     behaviors listed in the DataFrame.
     """
     model = model_info[0]
+    features_test = model_info[2]
+    labels_test = model_info[3]
     df = df.drop(columns=['X', 'Y', 'coord', 'Unique Squirrel ID', 'Hectare',
                           'Highlight Fur Color'])
-    features = df.loc[:, df.columns != 'Behavior']
-    features = pd.get_dummies(features)
-    predictions = model.predict(features)
+    predictions = model.predict(features_test)
     # 1) filter df to observed behaviors
     # 2) create array to represent observed behaviors
-    data_obs = df['Behavior'].tolist()
+    data_obs = labels_test.tolist()
     expected = [0, 0, 0]
     observed = [0, 0, 0]
     for behavior in predictions:
@@ -244,7 +256,8 @@ def main():
     full_df = processing.drop_null(added_column)
     model_info = fit_behavior(full_df)
     plot_feature_importance(model_info)
-    p_value = determine_validity(model_info, full_df)
+    # p_value = determine_validity(model_info, full_df)
+    # print(p_value)
 
 
 if __name__ == '__main__':
