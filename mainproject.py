@@ -59,9 +59,11 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common fur colors. Returns None.
     """
-    fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
+    fur_color = df['Primary Fur Color'].value_counts().rename_axis(
+        'Primary Fur Color').reset_index(name='counts')
 
-    fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts', kind='bar')
+    fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts',
+                        kind='bar')
     ax = fplot.facet_axis(0, 0)
     ax.bar_label(ax.containers[0])
 
@@ -75,12 +77,13 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common highlight colors. Returns None.
     """
-    highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
-    hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color', y='counts',
-                kind='bar')
+    highlight_color = df['Highlight Fur Color'].value_counts().rename_axis(
+        'Highlight Fur Color').reset_index(name='counts')
+    hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color',
+                        y='counts', kind='bar')
     ax = hplot.facet_axis(0, 0)
     ax.bar_label(ax.containers[0])
-    
+
     plt.ylabel('Count')
     plt.xticks(rotation='vertical')
     plt.title('Prevalence of Fur Highlight Color')
@@ -92,15 +95,22 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common behaviors. Returns None.
     """
-    approach = df['Approaches'].value_counts().rename_axis('Approaches').reset_index(name='counts')
-    indifferent = df['Indifferent'].value_counts().rename_axis('Indifferent').reset_index(name='counts')
-    runs_from = df['Runs from'].value_counts().rename_axis('Runs From').reset_index(name='counts')
+    approach = df['Approaches'].value_counts().rename_axis(
+        'Approaches').reset_index(name='counts')
+    indifferent = df['Indifferent'].value_counts().rename_axis(
+        'Indifferent').reset_index(name='counts')
+    runs_from = df['Runs from'].value_counts().rename_axis(
+        'Runs From').reset_index(name='counts')
 
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
-    ax1 = approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True, figsize=(10, 7), legend=False)
-    ax2 = indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True, figsize=(10, 7), legend=False, title='Behavior Types')
-    ax3 = runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True, figsize=(10, 7), legend=False)
+    ax1 = approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True,
+                        figsize=(10, 7), legend=False)
+    ax2 = indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True,
+                           figsize=(10, 7), legend=False,
+                           title='Behavior Types')
+    ax3 = runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True,
+                         figsize=(10, 7), legend=False)
 
     ax1.bar_label(ax1.containers[0], label_type='edge')
     ax2.bar_label(ax2.containers[0], label_type='edge')
@@ -112,10 +122,10 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 # research question 3
 def fit_behavior(df: pd.DataFrame) -> list[Any]:
     """
-    Trains and tests a RandomForestClassifier. Returns a list containing the
-    trained model, the DataFrame with columns of features used to train the model,
-    and the two DataFrames with columns of features and labels that will be used
-    to test the model.
+    Takes in a pandas DataFrame and trains and tests a RandomForestClassifier.
+    Returns a list containing the trained model, the DataFrame with columns of
+    features used to train the model, and the two DataFrames with columns of
+    features and labels that will be used to test the model.
     """
     # process data + split up into training and test datasets
     df = df.drop(columns=['X', 'Y', 'coord', 'Unique Squirrel ID', 'Hectare',
