@@ -15,13 +15,15 @@ import contextily as cx
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay, f1_score, precision_score, recall_score
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             precision_score, recall_score)
 
 from typing import Any
 
 import processing
 
 sns.set()
+
 
 # research question 1
 def plot_squirrel_sightings(df: pd.DataFrame, shape_file: Any) -> None:
@@ -49,10 +51,10 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file: Any) -> None:
     # df = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
     # markersize=4, cmap='Spectral', legend=True)
     new = new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
-                             markersize=4, legend=True)
+                   markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
     plt.savefig('map.png')
-    
+
 
 # research question 2
 def plot_common_fur_colors(df: pd.DataFrame) -> None:
@@ -62,10 +64,10 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     """
     fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
 
-    sns.catplot(data = fur_color, x = 'Primary Fur Color', y = 'counts', kind = 'bar')
+    sns.catplot(data=fur_color, x='Primary Fur Color', y='counts', kind='bar')
     plt.ylabel('Count')
     plt.title('Prevalence of Fur Color')
-    plt.savefig('fur_color_plot.png', bbox_inches='tight')  
+    plt.savefig('fur_color_plot.png', bbox_inches='tight')
 
 
 def plot_common_highlight_colors(df: pd.DataFrame) -> None:
@@ -74,7 +76,8 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     most common highlight colors. Returns None.
     """
     highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
-    sns.catplot(data = highlight_color, x = 'Highlight Fur Color', y = 'counts', kind = 'bar')
+    sns.catplot(data=highlight_color, x='Highlight Fur Color', y='counts',
+                kind='bar')
     plt.ylabel('Count')
     plt.xticks(rotation='vertical')
     plt.title('Prevalence of Fur Highlight Color')
@@ -92,9 +95,12 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
-    approach.plot(ax =ax1, x='Approaches', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
-    indifferent.plot(ax =ax2, x='Indifferent', kind = 'bar', stacked=True, figsize=(10,7), legend = False, title='Behavior Types')
-    runs_from.plot(ax =ax3, x='Runs From', kind = 'bar', stacked=True, figsize=(10,7), legend = False)
+    approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True,
+                  figsize=(10, 7), legend=False)
+    indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True,
+                     figsize=(10, 7), legend=False, title='Behavior Types')
+    runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True,
+                   figsize=(10, 7), legend=False)
 
     plt.savefig('behavior_type_plot.png', bbox_inches='tight')
 
@@ -115,8 +121,8 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     labels = df['Behavior']
     features_train, features_test, labels_train, labels_test = \
         train_test_split(features, labels, test_size=0.28,
-                         random_state = 42)
-    
+                         random_state=24)
+
     # create a random forest classifier
     rf = RandomForestClassifier()
 
@@ -153,14 +159,14 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
                    'min_samples_leaf': min_samples_leaf,
                    'bootstrap': bootstrap,
                    'criterion': criterion}
-    
+
     # find best RandomForestClassifier
     rf_base = RandomForestClassifier()
-    rf_random = RandomizedSearchCV(estimator = rf_base,
-                                   param_distributions = random_grid,
-                                   n_iter = 30, cv = 5,
-                                   verbose = 2,
-                                   random_state = 42, n_jobs = 4)
+    rf_random = RandomizedSearchCV(estimator=rf_base,
+                                   param_distributions=random_grid,
+                                   n_iter=30, cv=5,
+                                   verbose=2,
+                                   random_state=42, n_jobs=4)
     rf_random.fit(features_train, labels_train)
     print('Best hyperparameters:', rf_random.best_params_)
     training_pred2 = rf_random.predict(features_train)
@@ -168,7 +174,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     print('Adjusted RandomForestClassifier:')
     print('Training accuracy:', accuracy_score(labels_train, training_pred2))
     print('Test accuracy:', accuracy_score(labels_test, test_pred2))
-    
+
     # fit best model
     hp = rf_random.best_params_
     new_rf = RandomForestClassifier(n_estimators=hp['n_estimators'],
@@ -208,7 +214,7 @@ def verify_results(model: RandomForestClassifier,
     Takes in a RandomForestClassifier and lists that represents the features
     and labels used to test the model. Calculates the precision, recall, and
     F1 score of the model and plots a confusion matrix comparing the actual
-    and predicted squirrel behaviors. 
+    and predicted squirrel behaviors.
     """
     y_true = labels_test
     y_pred = model.predict(features_test)
@@ -220,13 +226,13 @@ def verify_results(model: RandomForestClassifier,
                                         average='macro',
                                         zero_division=0))
     print('Recall:', recall_score(y_true=y_true, y_pred=y_pred,
-                                  labels = ['Approaches', 'Indifferent',
-                                            'Runs from'],
+                                  labels=['Approaches', 'Indifferent',
+                                          'Runs from'],
                                   average='macro'))
-    print('F1:', f1_score(y_true=y_true, y_pred=y_pred,
-                          labels = ['Approaches', 'Indifferent',
-                                    'Runs from'],
-                          average='macro'))
+    print('F:', f1_score(y_true=y_true, y_pred=y_pred,
+                         labels=['Approaches', 'Indifferent',
+                                 'Runs from'],
+                         average='macro'))
 
     # plot confusion matrix
     cm = confusion_matrix(y_true=y_true, y_pred=y_pred,
@@ -241,14 +247,14 @@ def verify_results(model: RandomForestClassifier,
     plt.xlabel('Predicted Values')
     plt.ylabel('Actual Values')
     plt.title('Confusion Matrix')
-    plt.savefig('confusion_matrix.png')    
+    plt.savefig('confusion_matrix.png')
 
 
 def main():
     shape_data = 'CentralAndProspectParks//CentralPark.shp'
     shape_file = gpd.read_file(shape_data)
     df = processing.clean_data()
-    
+
     # run methods here
     plot_squirrel_sightings(df, shape_file)
     plot_common_fur_colors(df)
