@@ -44,12 +44,9 @@ def plot_squirrel_sightings(df: pd.DataFrame, shape_file: Any) -> None:
     updated_shape = shape_file.to_crs(epsg=3857)
     shape_file = updated_shape.plot(ax=ax, alpha=0, color='#FFFFFF')
     cx.add_basemap(shape_file, alpha=0.5)
-    # cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels)
-    # ax.set_axis_off()
+    ax.set_axis_off()
 
     new = updated_df.to_crs(epsg=3857)
-    # df = data_new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
-    # markersize=4, cmap='Spectral', legend=True)
     new = new.plot(ax=ax, column='Unique Squirrel ID', marker='.',
                    markersize=4, legend=True)
     plt.title('Squirrel Population in Central Park')
@@ -64,7 +61,10 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     """
     fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
 
-    sns.catplot(data=fur_color, x='Primary Fur Color', y='counts', kind='bar')
+    fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts', kind='bar')
+    ax = fplot.facet_axis(0, 0)
+    ax.bar_label(ax.containers[0])
+
     plt.ylabel('Count')
     plt.title('Prevalence of Fur Color')
     plt.savefig('fur_color_plot.png', bbox_inches='tight')
@@ -76,8 +76,11 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     most common highlight colors. Returns None.
     """
     highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
-    sns.catplot(data=highlight_color, x='Highlight Fur Color', y='counts',
+    hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color', y='counts',
                 kind='bar')
+    ax = hplot.facet_axis(0, 0)
+    ax.bar_label(ax.containers[0])
+    
     plt.ylabel('Count')
     plt.xticks(rotation='vertical')
     plt.title('Prevalence of Fur Highlight Color')
@@ -95,12 +98,13 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
-    approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True,
-                  figsize=(10, 7), legend=False)
-    indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True,
-                     figsize=(10, 7), legend=False, title='Behavior Types')
-    runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True,
-                   figsize=(10, 7), legend=False)
+    ax1 = approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True, figsize=(10, 7), legend=False)
+    ax2 = indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True, figsize=(10, 7), legend=False, title='Behavior Types')
+    ax3 = runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True, figsize=(10, 7), legend=False)
+
+    ax1.bar_label(ax1.containers[0], label_type='edge')
+    ax2.bar_label(ax2.containers[0], label_type='edge')
+    ax3.bar_label(ax3.containers[0], label_type='edge')
 
     plt.savefig('behavior_type_plot.png', bbox_inches='tight')
 
