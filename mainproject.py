@@ -59,8 +59,8 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common fur colors. Returns None.
     """
-    fur_color = df['Primary Fur Color'].value_counts().rename_axis(
-        'Primary Fur Color').reset_index(name='counts')
+    f = df['Primary Fur Color'].value_counts()
+    fur_color = f.rename_axis('Primary Fur Color').reset_index(name='counts')
 
     fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts',
                         kind='bar')
@@ -77,8 +77,9 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common highlight colors. Returns None.
     """
-    highlight_color = df['Highlight Fur Color'].value_counts().rename_axis(
-        'Highlight Fur Color').reset_index(name='counts')
+    h1 = df['Highlight Fur Color'].value_counts()
+    h2 = h1.rename_axis('Highlight Fur Color')
+    highlight_color = h2.reset_index(name='counts')
     hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color',
                         y='counts', kind='bar')
     ax = hplot.facet_axis(0, 0)
@@ -95,12 +96,12 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common behaviors. Returns None.
     """
-    approach = df['Approaches'].value_counts().rename_axis(
-        'Approaches').reset_index(name='counts')
-    indifferent = df['Indifferent'].value_counts().rename_axis(
-        'Indifferent').reset_index(name='counts')
-    runs_from = df['Runs from'].value_counts().rename_axis(
-        'Runs From').reset_index(name='counts')
+    a = df['Approaches'].value_counts()
+    approach = a.rename_axis('Approaches').reset_index(name='counts')
+    i = df['Indifferent'].value_counts()
+    indifferent = i.rename_axis('Indifferent').reset_index(name='counts')
+    r = df['Runs from'].value_counts()
+    runs_from = r.rename_axis('Runs From').reset_index(name='counts')
 
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
@@ -135,7 +136,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     labels = df['Behavior']
     features_train, features_test, labels_train, labels_test = \
         train_test_split(features, labels, test_size=0.28,
-                         random_state=24)
+                         random_state=42)
 
     # create a random forest classifier
     rf = RandomForestClassifier()
