@@ -217,16 +217,16 @@ def verify_results(model: RandomForestClassifier,
     print('Precision:', precision_score(y_true=y_true, y_pred=y_pred,
                                         labels=['Approaches', 'Indifferent',
                                                 'Runs from'],
-                                        average='weighted',
+                                        average='macro',
                                         zero_division=0))
     print('Recall:', recall_score(y_true=y_true, y_pred=y_pred,
                                   labels = ['Approaches', 'Indifferent',
                                             'Runs from'],
-                                  average='weighted'))
+                                  average='macro'))
     print('F1:', f1_score(y_true=y_true, y_pred=y_pred,
                           labels = ['Approaches', 'Indifferent',
                                     'Runs from'],
-                          average='weighted'))
+                          average='macro'))
 
     # plot confusion matrix
     cm = confusion_matrix(y_true=y_true, y_pred=y_pred,
