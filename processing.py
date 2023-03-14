@@ -60,12 +60,3 @@ def drop_null(df: pd.DataFrame) -> pd.DataFrame:
     df[['Primary Fur Color']].replace('', pd.NA)
     filtered = df.dropna(subset=['Age', 'Primary Fur Color'])
     return filtered
-
-
-def main():
-    df = clean_data()
-    print(df['Approaches'])
-
-
-if __name__ == '__main__':
-    main()
