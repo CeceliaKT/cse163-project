@@ -8,19 +8,17 @@ import pandas as pd
 import numpy as np
 
 
-def clean_data() -> pd.DataFrame:
+def clean_data(file_name: str) -> pd.DataFrame:
     """
     Reads in data from the csv file, converts columns 'Approaches',
     'Indifferent', and 'Runs from' to int, and returns a DataFrame with columns
     that we are planning to use.
     """
-    squirrels = pd.read_csv(
-        '2018_Central_Park_Squirrel_Census_-_Squirrel_Data.csv')
-    filtered = squirrels[['X', 'Y', 'Unique Squirrel ID', 'Hectare', 'Age',
-                          'Primary Fur Color', 'Highlight Fur Color',
-                          'Running', 'Chasing', 'Climbing', 'Eating',
-                          'Foraging', 'Approaches', 'Indifferent',
-                          'Runs from']]
+    df = pd.read_csv(file_name)
+    filtered = df[['X', 'Y', 'Unique Squirrel ID', 'Hectare', 'Age',
+                   'Primary Fur Color', 'Highlight Fur Color',
+                   'Running', 'Chasing', 'Climbing', 'Eating',
+                   'Foraging', 'Approaches', 'Indifferent', 'Runs from']]
     filtered = filtered.astype({'Approaches': 'int', 'Indifferent': 'int',
                                 'Runs from': 'int'})
     return filtered
