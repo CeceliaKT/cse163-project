@@ -17,6 +17,7 @@ The following contents of this file will be the instructions on how to use the c
 There are two required datasets:
 - 2018_Central_Park_Squirrel_Census_-_Squirrel_Data.csv
 - CentralPark.shp
+
 Both datasets that are needed are included in the folder titled, 'data'.
 
 ## To Run Our Project
