@@ -204,10 +204,10 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
 
 
 def plot_feature_importance(model: RandomForestClassifier,
-                            features: list[Any]) -> None:
+                            features: pd.DataFrame) -> None:
     """
-    Takes in a RandomForestClassifier and a list that represents the
-    features of the model. Creates a bar chart of the feature importances
+    Takes in a RandomForestClassifier and a pandas DataFrame that represents
+    the features of the model. Creates a bar chart of the feature importances
     of the model.
     """
     importances = model.feature_importances_
@@ -224,17 +224,18 @@ def plot_feature_importance(model: RandomForestClassifier,
 
 # research question 4
 def verify_results(model: RandomForestClassifier,
-                   features_test: list[Any], labels_test: list[Any]) -> None:
+                   features_test: pd.DataFrame,
+                   labels_test: pd.DataFrame) -> None:
     """
-    Takes in a RandomForestClassifier and lists that represents the features
-    and labels used to test the model. Calculates the precision, recall, and
-    F1 score of the model and plots a confusion matrix comparing the actual
-    and predicted squirrel behaviors.
+    Takes in a RandomForestClassifier and pandas DataFrames that represent the
+    features and labels used to test the model. Calculates the precision,
+    recall, and F-score of the model and plots a confusion matrix comparing
+    the actual and predicted squirrel behaviors.
     """
     y_true = labels_test
     y_pred = model.predict(features_test)
 
-    # calc precision, recall, f1 score
+    # calc precision, recall, f score
     print('Precision:', precision_score(y_true=y_true, y_pred=y_pred,
                                         labels=['Approaches', 'Indifferent',
                                                 'Runs from'],
@@ -259,8 +260,8 @@ def verify_results(model: RandomForestClassifier,
                          columns=['Approaches', 'Indifferent', 'Runs from'])
     plt.figure(figsize=(5, 5))
     sns.heatmap(cm_df, annot=True, cmap='Blues', fmt='d')
-    plt.xlabel('Predicted Values')
-    plt.ylabel('Actual Values')
+    plt.xlabel('Predicted Interactions')
+    plt.ylabel('Actual Interactions')
     plt.title('Confusion Matrix')
     plt.savefig('confusion_matrix.png')
 
