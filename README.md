@@ -10,6 +10,7 @@ The following contents of this file will be the instructions on how to use the c
 - numpy
 - sklearn
 - shapely.geometry
+- typing
 - contextily
 > To install contextily: pip3 install contextily
 
