@@ -267,7 +267,7 @@ def verify_results(model: RandomForestClassifier,
 
 
 def main():
-    shape_data = 'CentralAndProspectParks//CentralPark.shp'
+    shape_data = 'data//CentralPark.shp'
     shape_file = gpd.read_file(shape_data)
     sq_file = 'data//2018_Central_Park_Squirrel_Census_-_Squirrel_Data.csv'
     df = processing.clean_data(sq_file)
