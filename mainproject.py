@@ -59,9 +59,11 @@ def plot_common_fur_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common fur colors. Returns None.
     """
-    fur_color = df['Primary Fur Color'].value_counts().rename_axis('Primary Fur Color').reset_index(name='counts')
+    f = df['Primary Fur Color'].value_counts()
+    fur_color = f.rename_axis('Primary Fur Color').reset_index(name='counts')
 
-    fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts', kind='bar')
+    fplot = sns.catplot(data=fur_color, x='Primary Fur Color', y='counts',
+                        kind='bar')
     ax = fplot.facet_axis(0, 0)
     ax.bar_label(ax.containers[0])
 
@@ -75,12 +77,14 @@ def plot_common_highlight_colors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common highlight colors. Returns None.
     """
-    highlight_color = df['Highlight Fur Color'].value_counts().rename_axis('Highlight Fur Color').reset_index(name='counts')
-    hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color', y='counts',
-                kind='bar')
+    h1 = df['Highlight Fur Color'].value_counts()
+    h2 = h1.rename_axis('Highlight Fur Color')
+    highlight_color = h2.reset_index(name='counts')
+    hplot = sns.catplot(data=highlight_color, x='Highlight Fur Color',
+                        y='counts', kind='bar')
     ax = hplot.facet_axis(0, 0)
     ax.bar_label(ax.containers[0])
-    
+
     plt.ylabel('Count')
     plt.xticks(rotation='vertical')
     plt.title('Prevalence of Fur Highlight Color')
@@ -92,15 +96,22 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
     Takes in a pandas DataFrame and creates a bar chart of the
     most common behaviors. Returns None.
     """
-    approach = df['Approaches'].value_counts().rename_axis('Approaches').reset_index(name='counts')
-    indifferent = df['Indifferent'].value_counts().rename_axis('Indifferent').reset_index(name='counts')
-    runs_from = df['Runs from'].value_counts().rename_axis('Runs From').reset_index(name='counts')
+    a = df['Approaches'].value_counts()
+    approach = a.rename_axis('Approaches').reset_index(name='counts')
+    i = df['Indifferent'].value_counts()
+    indifferent = i.rename_axis('Indifferent').reset_index(name='counts')
+    r = df['Runs from'].value_counts()
+    runs_from = r.rename_axis('Runs From').reset_index(name='counts')
 
     fig, [ax1, ax2, ax3] = plt.subplots(ncols=3)
 
-    ax1 = approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True, figsize=(10, 7), legend=False)
-    ax2 = indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True, figsize=(10, 7), legend=False, title='Behavior Types')
-    ax3 = runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True, figsize=(10, 7), legend=False)
+    ax1 = approach.plot(ax=ax1, x='Approaches', kind='bar', stacked=True,
+                        figsize=(10, 7), legend=False)
+    ax2 = indifferent.plot(ax=ax2, x='Indifferent', kind='bar', stacked=True,
+                           figsize=(10, 7), legend=False,
+                           title='Behavior Types')
+    ax3 = runs_from.plot(ax=ax3, x='Runs From', kind='bar', stacked=True,
+                         figsize=(10, 7), legend=False)
 
     ax1.bar_label(ax1.containers[0], label_type='edge')
     ax2.bar_label(ax2.containers[0], label_type='edge')
@@ -112,10 +123,10 @@ def plot_common_behaviors(df: pd.DataFrame) -> None:
 # research question 3
 def fit_behavior(df: pd.DataFrame) -> list[Any]:
     """
-    Trains and tests a RandomForestClassifier. Returns a list containing the
-    trained model, the DataFrame with columns of features used to train the model,
-    and the two DataFrames with columns of features and labels that will be used
-    to test the model.
+    Takes in a pandas DataFrame and trains and tests a RandomForestClassifier.
+    Returns a list containing the trained model, the DataFrame with columns of
+    features used to train the model, and the two DataFrames with columns of
+    features and labels that will be used to test the model.
     """
     # process data + split up into training and test datasets
     df = df.drop(columns=['X', 'Y', 'coord', 'Unique Squirrel ID', 'Hectare',
@@ -125,7 +136,7 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
     labels = df['Behavior']
     features_train, features_test, labels_train, labels_test = \
         train_test_split(features, labels, test_size=0.28,
-                         random_state=24)
+                         random_state=42)
 
     # create a random forest classifier
     rf = RandomForestClassifier()
@@ -193,10 +204,10 @@ def fit_behavior(df: pd.DataFrame) -> list[Any]:
 
 
 def plot_feature_importance(model: RandomForestClassifier,
-                            features: list[Any]) -> None:
+                            features: pd.DataFrame) -> None:
     """
-    Takes in a RandomForestClassifier and a list that represents the
-    features of the model. Creates a bar chart of the feature importances
+    Takes in a RandomForestClassifier and a pandas DataFrame that represents
+    the features of the model. Creates a bar chart of the feature importances
     of the model.
     """
     importances = model.feature_importances_
@@ -213,17 +224,18 @@ def plot_feature_importance(model: RandomForestClassifier,
 
 # research question 4
 def verify_results(model: RandomForestClassifier,
-                   features_test: list[Any], labels_test: list[Any]) -> None:
+                   features_test: pd.DataFrame,
+                   labels_test: pd.DataFrame) -> None:
     """
-    Takes in a RandomForestClassifier and lists that represents the features
-    and labels used to test the model. Calculates the precision, recall, and
-    F1 score of the model and plots a confusion matrix comparing the actual
-    and predicted squirrel behaviors.
+    Takes in a RandomForestClassifier and pandas DataFrames that represent the
+    features and labels used to test the model. Calculates the precision,
+    recall, and F-score of the model and plots a confusion matrix comparing
+    the actual and predicted squirrel behaviors.
     """
     y_true = labels_test
     y_pred = model.predict(features_test)
 
-    # calc precision, recall, f1 score
+    # calc precision, recall, f score
     print('Precision:', precision_score(y_true=y_true, y_pred=y_pred,
                                         labels=['Approaches', 'Indifferent',
                                                 'Runs from'],
@@ -248,16 +260,17 @@ def verify_results(model: RandomForestClassifier,
                          columns=['Approaches', 'Indifferent', 'Runs from'])
     plt.figure(figsize=(5, 5))
     sns.heatmap(cm_df, annot=True, cmap='Blues', fmt='d')
-    plt.xlabel('Predicted Values')
-    plt.ylabel('Actual Values')
+    plt.xlabel('Predicted Interactions')
+    plt.ylabel('Actual Interactions')
     plt.title('Confusion Matrix')
     plt.savefig('confusion_matrix.png')
 
 
 def main():
-    shape_data = 'CentralAndProspectParks//CentralPark.shp'
+    shape_data = 'data//CentralAndProspectParks//CentralPark.shp'
     shape_file = gpd.read_file(shape_data)
-    df = processing.clean_data()
+    sq_file = 'data//2018_Central_Park_Squirrel_Census_-_Squirrel_Data.csv'
+    df = processing.clean_data(sq_file)
 
     # run methods here
     plot_squirrel_sightings(df, shape_file)
